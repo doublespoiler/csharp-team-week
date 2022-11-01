@@ -9,11 +9,13 @@ public class EnemyAI : MonoBehaviour
 // ===========AI Variable===============
   [SerializeField] Transform target;
   [SerializeField] float chaseRange = 5f;
+  [field: SerializeField] private EnemyWaves _waveManager;
   NavMeshAgent navMeshAgent;
   float distanceToTarget = Mathf.Infinity;
   bool isProvoked = false;
   int damage = 1;
   private float attackSpeed { get; set; } = 1f;
+  
   // ====================================
 
   // ==========Target Variables==========
@@ -38,6 +40,7 @@ public class EnemyAI : MonoBehaviour
     void Start()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
+        _waveManager = GameObject.Find("SpawnManager").GetComponent<EnemyWaves>();
     }
 
     // Update is called once per frame

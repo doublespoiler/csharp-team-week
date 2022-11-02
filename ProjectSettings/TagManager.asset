@@ -12,6 +12,7 @@ TagManager:
   - button f1
   - button f6
   - enemy
+  - Medkit
   layers:
   - Default
   - TransparentFX

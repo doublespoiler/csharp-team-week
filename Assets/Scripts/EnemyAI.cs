@@ -14,7 +14,10 @@ public class EnemyAI : MonoBehaviour
   float distanceToTarget = Mathf.Infinity;
   bool isProvoked = false;
   int damage = 1;
-  private float attackSpeed { get; set; } = 1f;
+  [field: SerializeField]
+  float coolDown { get; set; } = 1f;
+  float CDTimer;
+  // private float attackSpeed { get; set; } = 1f;
   
   // ====================================
 
@@ -39,14 +42,20 @@ public class EnemyAI : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        navMeshAgent = GetComponent<NavMeshAgent>();
-        _waveManager = GameObject.Find("SpawnManager").GetComponent<EnemyWaves>();
+      CDTimer = coolDown;
+      navMeshAgent = GetComponent<NavMeshAgent>();
+      _waveManager = GameObject.Find("SpawnManager").GetComponent<EnemyWaves>();
     }
 
     // Update is called once per frame
     void Update()
     {
       distanceToTarget = Vector3.Distance(target.position, transform.position);
+
+      if(CDTimer < coolDown)
+      {
+        CDTimer += Time.deltaTime;
+      }
 
       if(isProvoked)
       {
@@ -70,21 +79,13 @@ public class EnemyAI : MonoBehaviour
       navMeshAgent.SetDestination(target.position);
     }
 
-    IEnumerator AttackLogic()
-    {
-      while(true)
-      {
-        AttackTarget();
-        yield return new WaitForSeconds(attackSpeed);
-      }
-    }
-
     void AttackTarget()
     {
       Player player = target.GetComponent<Player>();
       if(player != null)
       {
         player.TakeDamage(this.gameObject, damage);
+        CDTimer = 0;
       }
     }
 
@@ -95,7 +96,7 @@ public class EnemyAI : MonoBehaviour
         ChaseTarget();
       }
 
-      if(distanceToTarget <= navMeshAgent.stoppingDistance)
+      if(distanceToTarget <= navMeshAgent.stoppingDistance && CDTimer >= coolDown)
       {
         AttackTarget();
       }

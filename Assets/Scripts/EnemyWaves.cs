@@ -46,12 +46,15 @@ public class EnemyWaves : MonoBehaviour
 
   public void StartWave()
   {
+    Debug.Log("Starting wave");
     startOfWave = true; 
     StartCoroutine(StartWaveRoutine());
   }
 
   IEnumerator StartWaveRoutine()
   {
+        Debug.Log("Starting wave courutine....");
+
     _uiManager.UpdateWaveStartDisplay(currentWave); 
     yield return new WaitForSeconds(3f);  //Wait 3.0 seconds before doing the if-statement check 
 
@@ -63,11 +66,15 @@ public class EnemyWaves : MonoBehaviour
 
   public void EndWave()
   {
+        Debug.Log("Ending wave");
+
     StartCoroutine(EndWaveRoutine());
   }
 
   IEnumerator EndWaveRoutine()
   {
+        Debug.Log("Ending wave courutine....");
+
     startOfWave = true;
     currentWave++; 
     enemiesToSpawn += 5; 

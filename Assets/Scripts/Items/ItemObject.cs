@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HealthPack : MonoBehaviour
+public class ItemObject : MonoBehaviour
 {
-    public float healthPack = 50f;
+    public Item item;
 }

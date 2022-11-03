@@ -1,61 +1,74 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class SpawnManager : MonoBehaviour
 {
 
     [field:SerializeField]
-
     private bool _stopSpawning;
-    private Transform _enemyContainer;
+    private GameObject _enemyContainer;
     [field:SerializeField]
     private EnemyWaves _waveManager;
     [field:SerializeField]
     private GameObject _enemyPrefab;
-    // Start is called before the first frame update
+    [field:SerializeField]
+    private float spawnDelay = 1f;
+    List<Bounds> spawnBounds = new List<Bounds>{};
+    public int enemiesSpawned {get; private set;}
+    private Bounds bounds;
+
     void Start()
     {
-      _enemyContainer = transform.GetChild(0);
+      _enemyContainer = GameObject.Find("EnemyContainer");
+      GameObject[] spawnPoints = GameObject.FindGameObjectsWithTag("Respawn");
+      
+      foreach(GameObject area in spawnPoints)
+      {
+        spawnBounds.Add(area.GetComponent<Renderer>().bounds);
+      }
+      enemiesSpawned = 0;
       StartCoroutine(SpawnEnemy());
     }
 
     //"Spawning the Enemies:" 
   public IEnumerator SpawnEnemy()
   {
-    int enemiesSpawned = 0; 
+    Debug.Log("Spawning enemies coroutine");
     yield return new WaitForSeconds(3.0f);
 
     while (!_stopSpawning)
     {
-      
-      if(enemiesSpawned != _waveManager.enemiesToSpawn)
+      if(_waveManager.enemiesSpawned < _waveManager.enemiesToSpawn)
       {
         //Can DRY this if needed. -SM
-        if(_waveManager.currentWave < 5)
-        {
-          GameObject newEnemy = Instantiate(_enemyPrefab, RandomPos(), Quaternion.identity); 
-
-          newEnemy.transform.parent = _enemyContainer.transform; 
-
-          _waveManager.enemiesLeft++; 
-          enemiesSpawned++; 
-        }
-        else if (_waveManager.currentWave >= 5)
-        {
-          GameObject newEnemy = Instantiate(_enemyPrefab, RandomPos(), Quaternion.identity); 
-          newEnemy.transform.parent = _enemyContainer.transform; 
-          _waveManager.enemiesLeft++; 
-          enemiesSpawned++; 
-        }
+            bounds = RandomBounds();
+            Debug.Log(bounds.size);
+            Debug.Log(bounds);
+            Vector3 position = bounds.center + RandomPos(bounds);
+            Debug.Log("Spawning enemy " + (_waveManager.enemiesSpawned + 1) + " of " + _waveManager.enemiesToSpawn + " at " + position);
+            GameObject newEnemy = Instantiate(_enemyPrefab, position, Quaternion.identity, _enemyContainer.transform);
+            _waveManager.enemiesLeft++; 
+            _waveManager.enemiesSpawned++; 
+            yield return new WaitForSeconds(spawnDelay);
+        
+        // else if (_waveManager.currentWave >= 5)
+        // {
+        //   Debug.Log("63");
+        //   GameObject newEnemy = Instantiate(_enemyPrefab, RandomPos(), Quaternion.identity); 
+        //   newEnemy.transform.parent = _enemyContainer.transform; 
+        //   _waveManager.enemiesLeft++; 
+        //   enemiesSpawned++; 
+        // }
       }
       else
       {
+        // Debug.Log("done spawning");
         _waveManager.startOfWave = false; 
-        enemiesSpawned = 0; 
       }
 
-      yield return new WaitForSeconds(3f); 
+      yield return new WaitForSeconds(1f); 
     }
   }
     
@@ -66,11 +79,16 @@ public class SpawnManager : MonoBehaviour
         
     }
 
-    Vector3 RandomPos()
+    Vector3 RandomPos(Bounds incB)
     {
-      float x = Random.Range(-25, 26);
-      int y = 5;
-      float z = Random.Range(-25, 26);
-      return new Vector3(x, y, z);
+      float offsetX = Random.Range(-incB.extents.x, incB.extents.x);
+      float offsetY = Random.Range(-incB.extents.y, incB.extents.y);
+      float offsetZ = Random.Range(-incB.extents.z, incB.extents.z);
+      return new Vector3(offsetX , offsetY, offsetY);
+    }
+    
+    Bounds RandomBounds()
+    {
+      return spawnBounds[Random.Range(0, spawnBounds.Count - 1)];
     }
 }

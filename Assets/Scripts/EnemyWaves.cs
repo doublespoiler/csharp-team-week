@@ -4,7 +4,7 @@ using UnityEngine;
 using TMPro;
 using System;
 
-//Typed By: Sam Majerus, 10/31/2022. 
+//Created by: Sam Majerus, 10/31/2022. 
 //Resource used:  https://levelup.gitconnected.com/how-to-create-an-enemy-wave-system-in-unity-49c5328564e7 
 
 // [NTS:  May need to replace 'WaitForSeconds' with 'DeltaTime']
@@ -14,12 +14,14 @@ public class EnemyWaves : MonoBehaviour
   [field: SerializeField]
   private SpawnManager _spawnManager; 
   [field: SerializeField]
-  private UIManager _uiManager; 
+  private UIManager _uiManager; //do this on the enemy & uimanager.updatescore 
   // private WaveManager _waveManager; 
 
   public int currentWave = 1; 
   public int enemiesToSpawn = 5;
   public int enemiesLeft = 0; 
+  public int enemiesSpawned = 0;
+  private int playerScore;
   //Timer that increments by 10 seconds for every enemy eliminated. 
 
   public bool startOfWave; 
@@ -31,12 +33,15 @@ public class EnemyWaves : MonoBehaviour
     if (_uiManager == null) {
       Debug.LogError("Game Canvas is Null!!");
     }
-
+    playerScore = 0;
     _spawnManager = GetComponent<SpawnManager>();
   }
 
   void Update()
   {
+    // Debug.Log("Enemies remaining: " + enemiesLeft);
+    // _uiManager.UpdateEnemiesLeft(enemiesLeft);
+    
     if (enemiesLeft <= 0 && startOfWave != true)
     {
       enemiesLeft = 0; 
@@ -46,19 +51,19 @@ public class EnemyWaves : MonoBehaviour
 
   public void StartWave()
   {
-    Debug.Log("Starting wave");
-    startOfWave = true; 
+    Debug.Log("Starting wave " + currentWave);
+    startOfWave = true;
     StartCoroutine(StartWaveRoutine());
   }
 
   IEnumerator StartWaveRoutine()
   {
-        Debug.Log("Starting wave courutine....");
-
+      Debug.Log("Starting wave coroutine....");
+    // _uiManager.UpdateEnemiesToSpawn(enemiesToSpawn);
     _uiManager.UpdateWaveStartDisplay(currentWave); 
-    yield return new WaitForSeconds(3f);  //Wait 3.0 seconds before doing the if-statement check 
+    yield return new WaitForSeconds(1f);  //Wait 3.0 seconds before doing the if-statement check 
 
-    if (enemiesLeft != enemiesToSpawn)
+    if (enemiesSpawned < enemiesToSpawn)
     {
       _spawnManager.SpawnEnemy(); 
     }
@@ -73,15 +78,19 @@ public class EnemyWaves : MonoBehaviour
 
   IEnumerator EndWaveRoutine()
   {
-        Debug.Log("Ending wave courutine....");
-
+    Debug.Log("Ending wave coroutine....");
     startOfWave = true;
     currentWave++; 
-    enemiesToSpawn += 5; 
+    Debug.Log("New wave " + currentWave);
+    enemiesToSpawn += 3; 
+    enemiesSpawned = 0;
     yield return new WaitForSeconds(2.5f);  //Wait 2.5 seconds to call 'StartWave' method
     StartWave();
   }
 
-
-  
+  public void UpdateScore()
+  {
+    playerScore += currentWave;
+    _uiManager.UpdateScoreDisplay(playerScore);
+  }
 }
